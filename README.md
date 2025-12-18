@@ -102,6 +102,52 @@ The implementation of the **SecondVintage CRM** delivers critical business value
 -   **Guaranteed Data Consistency:** Centralized management and strict validation rules ensure integrity across sales platforms and financial records.
 -   **Enterprise Scalability:** The decoupled architecture and reliance on asynchronous processing prove the system's readiness to manage inventory scaling beyond 80k+ items without performance degradation.
 
+## 🏗️ Architecture Evidence
+
+The **Second Vintage CRM** is engineered as a high-performance inventory and sales management engine for luxury assets. It centralizes the lifecycle of high-value products—from intake and AI-enhanced enrichment to multi-platform distribution—within a single source of truth.
+
+### 1. The Core Logic: Asset Lifecycle
+The system replaces manual data entry with an automated, high-volume pipeline designed for luxury goods:
+
+* **Intake & Batching:** Assets are organized into `Batches` (e.g., by shipment or category). This allows for bulk status updates, location tracking, and mass processing.
+* **AI Enrichment Engine:** Integrated via **Make.com**, the system triggers automated webhooks to analyze product images and generate professional technical descriptions and metadata.
+* **Multi-Platform Distribution:** A specialized distribution layer pushes validated assets to external marketplaces like **Catawiki**, **Tradera**, and **eBay** via dedicated API bridges and CSV exports.
+* **Financial Integrity:** Real-time profit margins are calculated by linking every asset to a `Transaction` ledger that accounts for purchase costs, multi-currency exchange rates, and platform fees.
+
+### 2. High-Level System Flow
+The architecture utilizes a "Request-Queue-Notify" pattern. Long-running tasks like AI generation and marketplace syncing are handled asynchronously to ensure a zero-latency user experience.
+
+```mermaid
+graph TD
+    A[Inventory Intake] --> B{Context Resolver}
+    B -->|Batch Processing| C[Data Enrichment]
+    C -->|Webhook| D[AI Description Engine]
+    D --> E[Quality Control]
+    E -->|API Sync| F[External Marketplaces]
+    F --> G[Sales & Profit Analytics]
+```
+
+### 3. Core Database Architecture
+The schema is optimized for 10k+ records, utilizing a relational model that prioritizes auditability, financial precision, and sub-second query speeds.
+
+| Table | Primary Purpose |
+| :--- | :--- |
+| **`watches`** | The central asset repository containing technical specs, metadata, and status. |
+| **`batches`** | Logical grouping for shipment tracking and bulk status updates. |
+| **`transactions`** | Immutable financial ledger for deposits and payments linked to specific assets. |
+| **`platform_data`** | Stores listing requirements for external APIs (Catawiki, Tradera, etc). |
+| **`watch_images`** | Manages high-resolution storage paths and auto-generated thumbnails. |
+
+[DIAGRAM PLACEHOLDER: I will update the Database ERD diagram here later]
+
+### 4. Technical Implementation & Scalability
+* **Scoped Access (RBAC):** Strict role-based boundaries (Admin, Finance, Agent, Seller) ensure financial data and administrative settings are only visible to authorized personnel.
+* **Async Pipeline:** Integration with **Laravel Horizon** and Redis ensures that heavy API and AI tasks do not block the main application thread.
+* **Data Accuracy:** A dedicated `conversion_rates` engine handles multi-currency transactions, ensuring all profit reporting remains accurate across different markets.
+* **Search Optimization:** Uses **Meilisearch** for full-text search across the inventory catalog, providing instant results even as the dataset grows.
+
+---
+
 ## Installation & Usage
 
 > Restricted to the team member.
