@@ -37,10 +37,11 @@
 
 ## Overview
 
-The **SecondVintage CRM** is a high-performance, specialized, and data-intensive **Customer Relationship Management (CRM) and Inventory System** built for the vintage watch market. It is architected as a **Full stack application**, utilizing a **Laravel for backend** with a **React/Inertia.js frontend**.
+The **SecondVintage CRM** is a high-performance, specialized, and data-intensive **Customer Relationship Management (CRM) and Inventory System** built for the vintage watch market. It is architected as a **Full-stack application**, utilizing a **Laravel for backend** with a **React + Inertia.js for frontend**.
 
-**What:** A centralized, scalable platform for managing a large volume of high-value vintage watch inventory and synchronizing sales across multiple external auction platforms (e.g Catawiki, Tradera).
-**Why & Problem Solved:** Developed to solve critical issues around **fragmented data integrity**, slow performance at high scale (10,000+ items), and the excessive manual effort required for listing, logistics, and financial tracking across disparate third-party services.
+**What:** A centralized, scalable platform for managing a large volume of high-value vintage watch inventory and synchronizing sales across multiple external auction platforms (e.g, Catawiki, Tradera).
+
+**Why & Problem Solved:** Developed to solve critical issues around **fragmented data integrity**, slow performance at high scale (80k+ items), and the excessive manual effort required for listing, logistics, and financial tracking across disparate third-party services.
 **Purpose:** To automate complex workflows, maintain data consistency, centralize financial reporting, and ensure a highly responsive user experience despite large datasets and asynchronous API interactions.
 
 ## Challenge / Problem Solved
@@ -57,22 +58,22 @@ The system utilizes a **modern, decoupled architecture** to ensure long-term sca
 
 ### Architectural Foundation
 
-The separation of the **Laravel Backend** and the **React/Inertia Frontend (SPA)** provides clear **separation of concerns**, allowing independent scaling and development. Laravel atuh, session-based authentication for secure the application.
+The separation of the **Laravel Backend** and the **React/Inertia Frontend (SPA)** provides clear **separation of concerns**, allowing independent scaling and development. Laravel session-based authentication to secure the application.
 
 ### Asynchronous Processing and Scalability
 
--   **High-Volume Queuing:** All resource-intensive tasks—including **AI Description Generation** (via webhooks to Make.com), **API Synchronization** (Catawiki/Tradera), and large **CSV Imports**—are processed asynchronously using **Laravel Queues (Redis Driver)**. This prevents blocking the web server and guarantees a snappy user experience.
+-   **High-Volume Queuing:** All resource-intensive tasks—including **AI Description Generation** (via webhooks to Make.com), **API Synchronization** (Catawiki/Tradera), and large **CSV Imports export** are processed asynchronously using **Laravel Queues (Redis Driver)**. This prevents blocking the web server and guarantees a snappy user experience.
 -   **Queue Monitoring:** Database log driver is implemented to provide real-time visibility, monitoring, and automated retry management for all queued jobs, ensuring high reliability of background processes.
 
 ### Security and Data Management
 
--   **Role-Based Access Control (RBAC):** We utilize the **Spatie Laravel Permission** package to define granular user roles (Admin, Manager, Finance, Agent, Seller) and enforce security via **Gates and Policies**, controlling access to sensitive financial and inventory modules.
+-   **Role-Based Access Control (RBAC):** We utilize the **Spatie Laravel Permission** package to define granular user roles (Admin, Manager, Finance, Agent, Seller) and enforce security via **Laravel Gates and Policies**, controlling access to sensitive financial and inventory modules.
 -   **Optimized Database:** MySQL tables are meticulously designed with essential **Foreign Key Constraints** and strategic indexing (`sku`, `watch_id`, `user_id`) to optimize join queries and read performance at scale.
 
 ## Features
 
--   **Intelligent Inventory Management:** Robust CRUD for max **40 high-resolution images per watch**, automated SKU generation, and clear tracking across customizable `stages` and `statuses`.
--   **Asynchronous AI Content Generation:** Integrates via queued jobs with **Make.com** webhooks For professional watch AI descriptions, enhancing listing efficiency.
+-   **Intelligent Inventory Management:** Robust CRUD for max **40 high-resolution images per watch**, automated unique SKU generation, and clear tracking across customizable `stages` and `statuses`.
+-   **Asynchronous AI Content Generation:** Integrates via queued jobs & Broadcasting with **Make.com** webhooks for professional watch AI descriptions, enhancing listing efficiency.
 -   **Multi-Platform Sales Management:** Dedicated `platform_data` schema (JSON) to store platform-specific listing attributes, enabling seamless **CSV export for Catawiki** and direct **API integration for Tradera**.
 
 Developed by team members
@@ -85,35 +86,34 @@ Developed by team members
 | Category       | Technology                                     |
 | :------------- | :--------------------------------------------- |
 | **Backend**    | Laravel, PHP ^8.2,                             |
-| **Frontend**   | React, Inertia.js Tailwind CSS,                |
+| **Frontend**   | React, Inertia.js, Tailwind CSS,               |
 | **Database**   | MySQL, SQLite                                  |
 | **Security**   | RBAC, Laravel Gates Policies                   |
 | **AI/LLM**     | Make.com Webhook, Queue for async and optimize |
 | **Realtime**   | Laravel broadcasting with Pusher               |
 | **Monitoring** | Telescope, database logger, event-driven logs  |
-| **Messaging**  | Twilio, Mailgun, database                      |
-| **Utilities**  | PDF (Dompdf), Excel (Maatwebsite), QR Codes    |
+| **Utilities**  | routes (ziggy), spatie query, Excel (Maatwebsite)|
 
 ## Results & Impact
 
 The implementation of the **SecondVintage CRM** delivers critical business value:
 
--   **50% Reduction in Listing Time:** Automation of AI content generation and multi-platform data preparation significantly cuts manual data entry.
+-   **60% Reduction in Listing Time:** Automation of AI content generation and multi-platform data preparation significantly cuts manual data entry.
 -   **Guaranteed Data Consistency:** Centralized management and strict validation rules ensure integrity across sales platforms and financial records.
--   **Enterprise Scalability:** The decoupled architecture and reliance on asynchronous processing prove the system's readiness to manage inventory scaling beyond 10,000 items without performance degradation.
+-   **Enterprise Scalability:** The decoupled architecture and reliance on asynchronous processing prove the system's readiness to manage inventory scaling beyond 80k+ items without performance degradation.
 
 ## Installation & Usage
 
 > Restricted to the team member.
 
--   **Clone:** `git clone [repo]`
+-   **Clone:** `git clone [repo].`
 -   **Initialize:** `composer setup` _or run setup scripts manually_
 -   **Run Application:** `php artisan serve` _or_ `composer run dev`
 -   **View Application:** [http://127.0.0.1:8000]
 
 ## Testing & Quality
 
-Reliable software quickly through strong testing and fast feedback loops.
+Reliable software is developed quickly through strong testing and fast feedback loops.
 
 -   Feature and unit tests are written using PHPUnit and Pest.
 -   PHPStan is used for strict type checking and early issue detection.
@@ -133,7 +133,7 @@ composer test         # run all checks
 
 **Saeed Hosan**  
 Email: appsaeed7@gmail.com  
-Linkedin: https://www.linkedin.com/in/saeedhosan
+LinkedIn: https://www.linkedin.com/in/saeedhosan
 
 ## License
 
