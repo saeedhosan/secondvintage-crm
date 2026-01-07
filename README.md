@@ -4,6 +4,7 @@
   <img alt="Status" src="https://img.shields.io/badge/Status-Production-success" />
   <img alt="Tech Stack" src="https://img.shields.io/badge/Stack-Laravel%20|%20React-blue" />
   <img alt="Scale" src="https://img.shields.io/badge/Scale-80K%2B%20Records-orange" />
+  <img alt="Testing" src="https://img.shields.io/badge/Tests-PHPUnit-success" />
 </p>
 
 > **Portfolio Case Study** | Full-stack enterprise CRM system for luxury vintage watch inventory and multi-platform sales management.
@@ -105,7 +106,7 @@ A modern, scalable web application built with Laravel and React that:
 -   Server-side rendering for SEO
 -   Tailwind CSS for responsive design
 
-**Database**: MySQL, SQLite
+**Database**: MySQL
 
 -   Optimized with strategic indexes
 -   Foreign key constraints for data integrity
@@ -206,9 +207,7 @@ graph TB
     G -->|Response| A
     H -->|Cache Hit| A
 
-    style A fill:#61dafb,stroke:#333,stroke-width:2px
     style G fill:#4479a1,stroke:#333,stroke-width:2px
-    style E fill:#dc382d,stroke:#333,stroke-width:2px
 ```
 
 ### Request Lifecycle
@@ -252,9 +251,9 @@ sequenceDiagram
 
 ```mermaid
 erDiagram
-    USERS ||--o{ WATCHES : creates
-    USERS ||--o{ TRANSACTIONS : processes
-    USERS {
+    users ||--o{ watches : creates
+    users ||--o{ transactions : processes
+    users {
         bigint id PK
         string name
         string email
@@ -262,23 +261,24 @@ erDiagram
         timestamp created_at
     }
 
-    WATCHES ||--o{ WATCH_IMAGES : contains
-    WATCHES ||--o{ PLATFORM_DATA : has
-    WATCHES }o--|| BATCHES : belongs_to
-    WATCHES {
+    watches ||--o{ watch_images : contains
+    watches ||--o{ platform_data : has
+    watches }o--|| batches : belongs_to
+    watches {
         bigint id PK
         string sku UK
+        string title
         string brand
         string model
         decimal cost
-        string status
+        enum status
         bigint batch_id FK
         bigint user_id FK
         timestamp created_at
     }
 
-    BATCHES ||--o{ WATCHES : groups
-    BATCHES {
+    batches ||--o{ watches : groups
+    batches {
         bigint id PK
         string batch_number UK
         string location
@@ -286,9 +286,9 @@ erDiagram
         timestamp shipped_at
     }
 
-    TRANSACTIONS }o--|| WATCHES : references
-    TRANSACTIONS }o--|| USERS : involves
-    TRANSACTIONS {
+    transactions }o--|| watches : references
+    transactions }o--|| users : involves
+    transactions {
         bigint id PK
         string type
         decimal amount
@@ -298,8 +298,8 @@ erDiagram
         timestamp created_at
     }
 
-    WATCH_IMAGES }o--|| WATCHES : belongs_to
-    WATCH_IMAGES {
+    watch_images }o--|| watches : belongs_to
+    watch_images {
         bigint id PK
         bigint watch_id FK
         string path
@@ -307,8 +307,8 @@ erDiagram
         boolean is_primary
     }
 
-    PLATFORM_DATA }o--|| WATCHES : extends
-    PLATFORM_DATA {
+    platform_data }o--|| watches : extends
+    platform_data {
         bigint id PK
         bigint watch_id FK
         string platform
