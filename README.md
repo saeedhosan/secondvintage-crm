@@ -10,7 +10,7 @@
 
 ---
 
-## 📋 Executive Summary
+## Executive Summary
 
 **SecondVintage CRM** is an enterprise-grade inventory management and sales automation platform designed specifically for the luxury vintage watch market. The system centralizes operations across multiple auction platforms while maintaining data integrity for 80,000+ high-value assets.
 
@@ -23,13 +23,13 @@
 
 ---
 
-## 🎯 Project Overview
+## Project Overview
 
 ### The Business Challenge
 
 SecondVintage faced critical operational bottlenecks:
 
-1. **Manual Data Entry Overhead**: Listing luxury watches across multiple platforms (Catawiki, Tradera) required repetitive data entry, consuming 10+ hours weekly per team member
+1. **Manual Data Entry Overhead**: Listing luxury watches across multiple platforms (Catawiki, Tradera) required repetitive data entry, consuming per team member
 2. **Data Inconsistency**: Fragmented systems led to inventory mismatches and financial discrepancies
 3. **Performance Issues**: Legacy systems struggled with 80K+ records, causing slow searches and timeouts
 4. **Limited Visibility**: No centralized dashboard for tracking inventory status, financials, or logistics
@@ -41,12 +41,12 @@ A modern, scalable web application built with Laravel and React that:
 -   **Automates repetitive tasks** using AI-powered content generation and batch processing
 -   **Centralizes data** in a single source of truth with robust validation
 -   **Processes tasks asynchronously** to maintain fast response times
--   **Integrates with external services** (DHL, auction platforms) via secure APIs
+-   **Integrates with external services** (DHL, Make.com, auction platforms) via secure APIs
 -   **Provides role-based access** for different team members (Admin, Finance, Agents, Sellers)
 
 ---
 
-## ✨ Key Features
+## Key Features
 
 ### 1. Intelligent Inventory Management
 
@@ -88,7 +88,7 @@ A modern, scalable web application built with Laravel and React that:
 
 ---
 
-## 🛠️ Technical Architecture
+## Technical Architecture
 
 ### Technology Stack
 
@@ -105,7 +105,7 @@ A modern, scalable web application built with Laravel and React that:
 -   Server-side rendering for SEO
 -   Tailwind CSS for responsive design
 
-**Database**: MySQL
+**Database**: MySQL, SQLite
 
 -   Optimized with strategic indexes
 -   Foreign key constraints for data integrity
@@ -120,14 +120,15 @@ A modern, scalable web application built with Laravel and React that:
 
 ### Laravel Best Practices Implemented
 
-✅ **Clean Architecture**
+**Clean Architecture**
 
 -   Service classes for business logic
 -   Repository pattern for data access
 -   Form Request validation
 -   Resource transformers for API responses
+-   Pagination for frontend data table
 
-✅ **Security First**
+**Security First**
 
 -   CSRF protection on all forms
 -   SQL injection prevention via Eloquent
@@ -135,7 +136,7 @@ A modern, scalable web application built with Laravel and React that:
 -   Role-based access control (Spatie Permissions)
 -   Laravel Sanctum for API authentication
 
-✅ **Performance Optimization**
+**Performance Optimization**
 
 -   Eager loading to prevent N+1 queries
 -   Database query optimization with indexes
@@ -143,14 +144,14 @@ A modern, scalable web application built with Laravel and React that:
 -   CDN integration for image delivery
 -   Queue-based processing for heavy tasks
 
-✅ **Code Quality**
+**Code Quality**
 
--   PHPStan for static analysis (Level 8)
--   Laravel Pint for code styling (PSR-12)
+-   PHPStan for static analysis
+-   Laravel Pint for code styling
 -   Comprehensive test coverage (PHPUnit/Pest)
 -   Automated CI/CD pipeline
 
-✅ **Developer Experience**
+**Developer Experience**
 
 -   Laravel Telescope for debugging
 -   Comprehensive API documentation
@@ -159,21 +160,84 @@ A modern, scalable web application built with Laravel and React that:
 
 ---
 
-## 📊 System Architecture
+## System Architecture
 
 ### High-Level Data Flow
 
+```mermaid
+graph TB
+    subgraph "Frontend Layer"
+        A[React + Inertia.js]
+    end
+
+    subgraph "Backend Layer"
+        B[Laravel Controllers]
+        C[Service Layer]
+        D[Repository Layer]
+    end
+
+    subgraph "Processing Layer"
+        E[Queue Jobs<br/>Redis]
+        F[Event System]
+    end
+
+    subgraph "Data Layer"
+        G[(MySQL Database)]
+        H[Cache<br/>Redis]
+    end
+
+    subgraph "External Services"
+        I[DHL API]
+        J[Tradera API]
+        K[AI Service<br/>Make.com]
+    end
+
+    A -->|HTTP Request| B
+    B --> C
+    C --> D
+    D --> G
+    D --> H
+    C -->|Dispatch| E
+    C -->|Fire| F
+    E -->|Process| I
+    E -->|Process| J
+    E -->|Process| K
+    K -->|Webhook| B
+    G -->|Response| A
+    H -->|Cache Hit| A
+
+    style A fill:#61dafb,stroke:#333,stroke-width:2px
+    style G fill:#4479a1,stroke:#333,stroke-width:2px
+    style E fill:#dc382d,stroke:#333,stroke-width:2px
 ```
-User Request → Laravel Backend → Business Logic Layer
-                                       ↓
-                        ┌──────────────┴──────────────┐
-                        ↓                             ↓
-                Queue Jobs (Async)          Database Operations
-                        ↓                             ↓
-            ┌──────────┴──────────┐                  ↓
-            ↓                     ↓              Response →
-    External APIs          AI Services         React Frontend
-    (DHL, Tradera)         (Make.com)
+
+### Request Lifecycle
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Frontend
+    participant Controller
+    participant Service
+    participant Queue
+    participant External API
+    participant Database
+
+    User->>Frontend: Create Product Listing
+    Frontend->>Controller: POST /watches
+    Controller->>Service: ProcessWatch::handle()
+    Service->>Database: Store Watch Data
+    Database-->>Service: Watch ID
+    Service->>Queue: Dispatch AIGenerateDescription
+    Service-->>Frontend: Success Response
+    Frontend-->>User: Show Success Message
+
+    Note over Queue,External API: Asynchronous Processing
+    Queue->>External API: Generate Description
+    External API->>Queue: Webhook Callback
+    Queue->>Database: Update Watch Description
+    Queue->>Frontend: Broadcast Event
+    Frontend-->>User: Real-time Notification
 ```
 
 ### Key Design Patterns
@@ -186,19 +250,93 @@ User Request → Laravel Backend → Business Logic Layer
 
 ### Database Design
 
+```mermaid
+erDiagram
+    USERS ||--o{ WATCHES : creates
+    USERS ||--o{ TRANSACTIONS : processes
+    USERS {
+        bigint id PK
+        string name
+        string email
+        string role
+        timestamp created_at
+    }
+
+    WATCHES ||--o{ WATCH_IMAGES : contains
+    WATCHES ||--o{ PLATFORM_DATA : has
+    WATCHES }o--|| BATCHES : belongs_to
+    WATCHES {
+        bigint id PK
+        string sku UK
+        string brand
+        string model
+        decimal cost
+        string status
+        bigint batch_id FK
+        bigint user_id FK
+        timestamp created_at
+    }
+
+    BATCHES ||--o{ WATCHES : groups
+    BATCHES {
+        bigint id PK
+        string batch_number UK
+        string location
+        string status
+        timestamp shipped_at
+    }
+
+    TRANSACTIONS }o--|| WATCHES : references
+    TRANSACTIONS }o--|| USERS : involves
+    TRANSACTIONS {
+        bigint id PK
+        string type
+        decimal amount
+        string currency
+        bigint watch_id FK
+        bigint user_id FK
+        timestamp created_at
+    }
+
+    WATCH_IMAGES }o--|| WATCHES : belongs_to
+    WATCH_IMAGES {
+        bigint id PK
+        bigint watch_id FK
+        string path
+        int order
+        boolean is_primary
+    }
+
+    PLATFORM_DATA }o--|| WATCHES : extends
+    PLATFORM_DATA {
+        bigint id PK
+        bigint watch_id FK
+        string platform
+        json metadata
+        timestamp synced_at
+    }
+```
+
 **Core Tables**:
 
--   `watches` - Central inventory catalog
+-   `watches` - Central inventory catalog (80K+ records)
 -   `batches` - Shipment and grouping management
--   `transactions` - Financial ledger (immutable)
--   `platform_data` - Marketplace-specific metadata
+-   `transactions` - Financial ledger (immutable audit trail)
+-   `platform_data` - Marketplace-specific metadata (Catawiki, Tradera)
 -   `users` - Authentication and role management
+-   `watch_images` - High-resolution product photography (40 images/watch)
 
 **Relationships**: Properly normalized to 3NF with strategic denormalization for performance.
 
+**Indexing Strategy**:
+
+-   Unique indexes on `sku`, `batch_number`, `email`
+-   Composite indexes on `(status, created_at)` for common queries
+-   Full-text indexes on `brand`, `model`, `description` via Meilisearch
+
 ---
 
-## 🎨 User Interface
+## User Interface
 
 ### Dashboard Overview
 
@@ -276,7 +414,7 @@ composer format               # Code style formatting
 
 ---
 
-## 🔒 Security & Compliance
+## Security & Compliance
 
 -   **Data Protection**: Encrypted sensitive information (passwords, API keys)
 -   **Access Control**: Granular permissions based on user roles
@@ -286,7 +424,7 @@ composer format               # Code style formatting
 
 ---
 
-## 🚀 Deployment & Scalability
+## Deployment & Scalability
 
 ### Current Infrastructure
 
@@ -305,7 +443,7 @@ composer format               # Code style formatting
 
 ---
 
-## 👥 Team & Collaboration
+## Team & Collaboration
 
 ### Development Methodology
 
@@ -316,7 +454,7 @@ composer format               # Code style formatting
 
 ### My Role & Contributions
 
--   **Lead Full-Stack Developer**
+-   **Full-Stack Developer**
 -   Architected core system design
 -   Implemented AI integration pipeline
 -   Optimized database queries for performance
@@ -325,7 +463,7 @@ composer format               # Code style formatting
 
 ---
 
-## 📞 Contact
+## Contact
 
 **Developer**: Saeed Hosan  
 **Email**: appsaeed7@gmail.com  
@@ -333,9 +471,9 @@ composer format               # Code style formatting
 
 ---
 
-## 📄 Legal Notice
+## Legal Notice
 
-This documentation is provided for **portfolio and case study purposes only**. All source code, proprietary algorithms, and business logic remain the intellectual property of SecondVintage.com © 2025.
+This documentation is provided for **portfolio and case study purposes only**. All source code, proprietary algorithms, and business logic remain the intellectual property of SecondVintage © 2025.
 
 **License**: CC BY-NC-ND 4.0 (Documentation Only)
 
