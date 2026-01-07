@@ -1,0 +1,59 @@
+name: 🚀 Deploy Laravel application
+
+on:
+    push:
+        branches:
+            - your_branch
+
+jobs:
+    app-laravel:
+        name: 🎉 Test Deploy
+        runs-on: ubuntu-latest
+        steps:
+            - name: 🚚 Get latest code
+              uses: actions/checkout@v4
+
+            - name: Install Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "20" # Specify your Node.js version heres
+
+            - name: Install and build with npm
+              run: |
+                  npm install
+                  npm run build
+
+            # - name: Install PHP and Composer
+            #   uses: shivammathur/setup-php@v2
+            #   with:
+            #     php-version: "8.3" # Specify your PHP version here
+            #     extensions: mbstring, xml, bcmath, gd, curl
+            #     coverage: none
+
+            - name: Install Composer dependencies
+              run: composer install
+            - name: Deploy to server
+              uses: easingthemes/ssh-deploy@main
+              with:
+                  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+                  ARGS: "-rlgoDzvc -i"
+                  SOURCE: "./"
+                  REMOTE_HOST: 'your_host_or_ip'
+                  REMOTE_USER: 'your_host_user'
+                  REMOTE_PORT: 'your_remote_port'
+                  TARGET: /home/public_html
+                  EXCLUDE: "/node_modules/, /.github/, /.git/, /README.md, /.vscode, /docs"
+                  SCRIPT_BEFORE: |
+                      # Remove the files to avoid conflict
+                      rm -rf /home/public_html/database/migrations /home/public_html/app/Console/Commands
+                  SCRIPT_AFTER: |
+                      echo "Run after script"
+                      cd /home/public_html
+                      rm -rf *.sh
+
+                      php artisan putenv APP_ENV="local"
+                      php artisan migrate
+                      php artisan storage:link &> /dev/null
+                      php artisan optimize:clear
+                      php artisan db:seed --class=HelperSeeder
+                      php artisan putenv APP_ENV="production"
