@@ -1,0 +1,114 @@
+{
+    "name": "secondvintage/crm",
+    "type": "project",
+    "description": "Luxury Watch Management Platform - Enterprise CRM for vintage watch inventory and multi-platform sales management",
+    "keywords": [
+        "laravel",
+        "crm",
+        "inventory",
+        "luxury",
+        "watches",
+        "sales",
+        "management"
+    ],
+    "license": "proprietary",
+    "require": {
+        "php": "^8.4",
+        "laravel/framework": "^11.0",
+        "laravel/tinker": "^2.9",
+        "laravel/sanctum": "^4.0",
+        "laravel/telescope": "^5.0",
+        "spatie/laravel-permission": "^6.10",
+        "spatie/laravel-activitylog": "^4.8",
+        "laravel/scout": "^10.0",
+        "meilisearch/meilisearch-php": "^1.0",
+        "maatwebsite/excel": "^3.1",
+        "intervention/image": "^3.0",
+        "laravel/horizon": "^5.0",
+        "pusher/pusher-php-server": "^7.2",
+        "guzzlehttp/guzzle": "^7.8",
+        "league/flysystem-aws-s3-v3": "^3.0"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.23",
+        "laravel/pint": "^1.17",
+        "laravel/sail": "^1.29",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.0",
+        "phpunit/phpunit": "^11.0",
+        "phpstan/phpstan": "^1.11",
+        "larastan/larastan": "^3.0",
+        "rector/rector": "^1.0",
+        "barryvdh/laravel-debugbar": "^3.13"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        },
+        "files": [
+            "app/Support/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-update-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi",
+            "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
+            "@php artisan migrate --graceful --ansi"
+        ],
+        "test": [
+            "phpunit"
+        ],
+        "test-coverage": [
+            "phpunit --coverage-html coverage"
+        ],
+        "analyse": [
+            "phpstan analyse"
+        ],
+        "format": [
+            "pint"
+        ],
+        "check": [
+            "@analyse",
+            "@test"
+        ],
+        "ci": [
+            "@format",
+            "@check"
+        ]
+    },
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+                "laravel/telescope"
+            ]
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

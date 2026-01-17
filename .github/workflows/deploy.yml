@@ -1,0 +1,95 @@
+name: 🚀 Deploy Laravel application
+
+on:
+    push:
+        branches:
+            - develop
+    workflow_dispatch:
+        inputs:
+            environment:
+                description: 'Deployment environment'
+                required: true
+                default: 'production'
+                type: choice
+                options:
+                - production
+                - staging
+
+jobs:
+    app-laravel:
+        name: 🎉 Test Deploy
+        runs-on: ubuntu-latest
+        steps:
+            - name: 🚚 Get latest code
+              uses: actions/checkout@v4
+
+            - name: Install Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+
+            - name: Install and build with npm
+              run: |
+                  npm install
+                  npm run build
+
+            - name: Install PHP and Composer
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: "8.4"
+                  extensions: mbstring, xml, bcmath, gd, curl
+                  coverage: none
+
+            - name: Install Composer dependencies
+              run: composer install
+            - name: Deploy to server
+              uses: easingthemes/ssh-deploy@main
+              with:
+                  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+                  ARGS: "-rlgoDzvc -i"
+                  SOURCE: "./"
+                  REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
+                  REMOTE_USER: ${{ secrets.REMOTE_USER }}
+                  REMOTE_PORT: ${{ secrets.REMOTE_PORT || '22' }}
+                  TARGET: ${{ secrets.REMOTE_TARGET || '/var/www/html' }}
+                  EXCLUDE: "/node_modules/, /.github/, /.git/, /README.md, /.vscode, /docs, /tests/"
+                  SCRIPT_BEFORE: |
+                      # Backup current deployment
+                      if [ -d "${{ secrets.REMOTE_TARGET || '/var/www/html' }}/backup" ]; then
+                          rm -rf "${{ secrets.REMOTE_TARGET || '/var/www/html' }}/backup"
+                      fi
+                      cp -r "${{ secrets.REMOTE_TARGET || '/var/www/html' }}" "${{ secrets.REMOTE_TARGET || '/var/www/html' }}/backup" 2>/dev/null || true
+                      
+                      # Remove conflicting files
+                      rm -rf "${{ secrets.REMOTE_TARGET || '/var/www/html' }}/database/migrations"
+                      rm -rf "${{ secrets.REMOTE_TARGET || '/var/www/html' }}/app/Console/Commands"
+                  SCRIPT_AFTER: |
+                      echo "Deployment completed, running post-deployment tasks..."
+                      cd "${{ secrets.REMOTE_TARGET || '/var/www/html' }}"
+                      rm -rf *.sh
+
+                      # Set maintenance mode
+                      php artisan down --render="errors::503"
+                      
+                      # Install dependencies
+                      composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+                      npm ci --production
+                      npm run build
+                      
+                      # Run migrations and optimizations
+                      php artisan migrate --force
+                      php artisan storage:link
+                      php artisan optimize:clear
+                      php artisan config:cache
+                      php artisan route:cache
+                      php artisan view:cache
+                      
+                      # Run seeds if needed
+                      if [ "${{ github.event.inputs.environment || 'production' }}" = "staging" ]; then
+                          php artisan db:seed --class=HelperSeeder --force
+                      fi
+                      
+                      # Bring application back up
+                      php artisan up
+                      
+                      echo "Deployment successful!"
